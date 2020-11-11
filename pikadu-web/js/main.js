@@ -50,7 +50,13 @@ const setUsers = {
   },
   signUp(email, password, handler) {
     if (!this.getUser(email)) {
-      const user = { email, password, displayName: email };
+      const displayName = email
+        .split("")
+        .map((elem, index) =>
+          elem !== "@" ? "" : user.displayName.slice(0, index)
+        )
+        .join("");
+      const user = { email, password, displayName };
       listUsers.push(user);
       this.authorizedUser(user);
       handler();
@@ -73,12 +79,7 @@ const toggleAuthDom = () => {
   if (user) {
     loginElem.style.display = "none";
     userElem.style.display = "";
-    userNameElem.textContent = user.displayName
-      .split("")
-      .map((elem, index) =>
-        elem !== "@" ? "" : user.displayName.slice(0, index)
-      )
-      .join("");
+    userNameElem.textContent = user.displayName;
     console.log(userNameElem.textContent);
   } else {
     loginElem.style.display = "";
