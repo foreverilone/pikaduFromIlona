@@ -50,13 +50,9 @@ const setUsers = {
   },
   signUp(email, password, handler) {
     if (!this.getUser(email)) {
-      const displayName = email
-        .split("")
-        .map((elem, index) =>
-          elem !== "@" ? "" : user.displayName.slice(0, index)
-        )
-        .join("");
-      const user = { email, password, displayName };
+      const user = { email, password, displayName: email.split("@")[0] };
+      //const user = { email, password, displayName: email };
+
       listUsers.push(user);
       this.authorizedUser(user);
       handler();
@@ -80,6 +76,12 @@ const toggleAuthDom = () => {
     loginElem.style.display = "none";
     userElem.style.display = "";
     userNameElem.textContent = user.displayName;
+    /*   userNameElem.textContent = user.displayName
+      .split("")
+      .map((elem, index) =>
+        elem !== "@" ? "" : user.displayName.slice(0, index)
+      )
+      .join(""); */
     console.log(userNameElem.textContent);
   } else {
     loginElem.style.display = "";
