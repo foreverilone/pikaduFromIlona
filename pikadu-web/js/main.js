@@ -1,3 +1,17 @@
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAJtWkv9A3sqkcBgj7HPjlv0i001SM3D4w",
+  authDomain: "pikadu-2d7e3.firebaseapp.com",
+  databaseURL: "https://pikadu-2d7e3.firebaseio.com",
+  projectId: "pikadu-2d7e3",
+  storageBucket: "pikadu-2d7e3.appspot.com",
+  messagingSenderId: "325152327050",
+  appId: "1:325152327050:web:a585b731cf4224d37f3473",
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+console.log(firebase);
+
 // Создаем переменную, в которую положим кнопку меню
 let menuToggle = document.querySelector("#menu-toggle");
 // Создаем переменную, в которую положим меню
@@ -23,6 +37,8 @@ const editPhotoURL = document.querySelector(".edit-photo");
 const userAvatarElem = document.querySelector(".user-avatar");
 
 const postsWrapper = document.querySelector(".posts");
+const buttonNewPost = document.querySelector(".button-new-post");
+const addPostElem = document.querySelector(".add-post");
 
 const listUsers = [
   {
@@ -30,12 +46,15 @@ const listUsers = [
     email: "maks@mail.com",
     password: "123456",
     displayName: "MaksJS",
+    photo: "https://st.kp.yandex.net/images/kadr/sm_3434403.jpg",
   },
   {
     id: "02",
     email: "kate@mail.com",
     password: "12344556",
     displayName: "KateJS",
+    photo:
+      "https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/d91cf99a-63a2-432a-a72b-ae0b8c6ea1d6/360",
   },
 ];
 
@@ -49,14 +68,18 @@ const setUsers = {
     const user = this.getUser(email);
     if (user && user.password === password) {
       this.authorizedUser(user);
-      handler();
+      if (handler) {
+        handler();
+      }
     } else {
       alert("Пользователь с такими данными не найден");
     }
   },
   logOut(handler) {
     this.user = null;
-    handler();
+    if (handler) {
+      handler();
+    }
   },
   signUp(email, password, handler) {
     if (!regExpValidEmail.test(email)) {
@@ -74,7 +97,9 @@ const setUsers = {
       //displayName: email.substring{0, email.indexOf('@');
       listUsers.push(user);
       this.authorizedUser(user);
-      handler();
+      if (handler) {
+        handler();
+      }
     } else {
       alert("Пользователь был зарегистрирован");
     }
@@ -89,7 +114,9 @@ const setUsers = {
       this.user.photo = userPhoto;
     }
 
-    handler();
+    if (handler) {
+      handler();
+    }
   },
 
   getUser(email) {
@@ -106,7 +133,10 @@ const setPosts = {
       title: "Заголовок поста",
       text: "Далеко-далеко за словесными горами в стране гласных и согласных",
       tags: ["свежее", "новое", "горячее", "мое", "случайность"],
-      author: "maks@mail.com",
+      author: {
+        displayName: "maks",
+        photo: "https://st.kp.yandex.net/images/kadr/sm_3434403.jpg",
+      },
       date: "11.11.2020, 20:54:00",
       like: 65,
       coments: 20,
@@ -115,12 +145,34 @@ const setPosts = {
       title: "Заголовок поста 2",
       text: "Далеко-далеко за словесными горами в стране гласных и согласных",
       tags: ["доброе", "классное"],
-      author: "kate@mail.com",
+      author: {
+        displayName: "kate",
+        photo:
+          "https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/d91cf99a-63a2-432a-a72b-ae0b8c6ea1d6/360",
+      },
       date: "10.11.2020, 20:54:00",
       like: 6,
       coments: 2,
     },
   ],
+  addPost(title, text, tags, handler) {
+    this.allPosts.unshift({
+      title,
+      text,
+      tags: tags.split(",").map((item) => item.trim()),
+      author: {
+        displayName: setUsers.user.displayName,
+        photo: setUsers.user.photo,
+      },
+      date: new Date().toLocaleString(),
+      like: 0,
+      coments: 0,
+    });
+
+    if (handler) {
+      handler();
+    }
+  },
 };
 
 const toggleAuthDom = () => {
@@ -138,10 +190,19 @@ const toggleAuthDom = () => {
       )
       .join(""); */
     userAvatarElem.src = user.photo || userAvatarElem.src;
+    buttonNewPost.classList.add("visible");
   } else {
     loginElem.style.display = "";
     userElem.style.display = "none";
+    buttonNewPost.classList.remove("visible");
+    addPostElem.classList.remove("visible");
+    postsWrapper.classList.add("visible");
   }
+};
+
+const showAddPost = () => {
+  addPostElem.classList.add("visible");
+  postsWrapper.classList.remove("visible");
 };
 
 const showAllPosts = () => {
@@ -157,7 +218,9 @@ const showAllPosts = () => {
             <div class="tags">
              
          
-              ${tags.map((tag) => "#" + tag).join(" ")}
+              ${tags
+                .map((tag) => `<a href="#${tag}" class="tag">#${tag}</a>`)
+                .join(" ")}
             </div>
             <!-- /.tags -->
           </div>
@@ -190,11 +253,13 @@ const showAllPosts = () => {
             <!-- /.post-buttons -->
             <div class="post-author">
               <div class="author-about">
-                <a href="#" class="author-username">${author}</a>
+                <a href="#" class="author-username">${author.displayName}</a>
                 <span class="post-time">${date}</span>
               </div>
               <a href="#" class="author-link"
-                ><img src="img/avatar.jpeg" alt="avatar" class="author-avatar"
+                ><img src=${
+                  author.photo || "img/avatar.jpeg"
+                } alt="avatar" class="author-avatar"
               /></a>
             </div>
             <!-- /.post-author -->
@@ -206,6 +271,9 @@ const showAllPosts = () => {
   );
 
   postsWrapper.innerHTML = postHTML;
+
+  addPostElem.classList.remove("visible");
+  postsWrapper.classList.add("visible");
 };
 
 const init = () => {
@@ -250,8 +318,39 @@ const init = () => {
     menu.classList.toggle("visible");
   });
 
+  buttonNewPost.addEventListener("click", (event) => {
+    event.preventDefault();
+    showAddPost();
+  });
+
+  addPostElem.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const { title, text, tags } = addPostElem.elements;
+
+    if (title.value.length < 6) {
+      alert("Слишком короткий заголовок");
+      return;
+    }
+
+    if (text.value.length < 50) {
+      alert("Слишком короткий пост");
+      return;
+    }
+
+    setPosts.addPost(title.value, title.value, tags.value, showAllPosts);
+
+    addPostElem.classList.remove("visible");
+    addPostElem.reset();
+  });
+
   showAllPosts();
   toggleAuthDom();
 };
 
 document.addEventListener("DOMContentLoaded", init);
+
+/* fetch("https://jsonplaceholder.typicode.com/todos/1")
+  .then((response) => response.json())
+  .then((json) => console.log(json));
+ */
